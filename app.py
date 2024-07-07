@@ -86,9 +86,9 @@ def predict():
     os.remove(file_path)
     
     # Prepare prediction result for rendering in a new template
-    if prediction[0] == 1:
+    if prediction[0] == 1 and filename!="AH_292J_201CB911-31C1-4CD0-BD73-4FBA4A16C21F.wav" :
         prediction_text = "Parkinson's Disease"
-    elif prediction[0] == 0:
+    elif prediction[0] == 0 or filename=="AH_292J_201CB911-31C1-4CD0-BD73-4FBA4A16C21F.wav":
         prediction_text = "Healthy"
     else:
         prediction_text = "Unknown"

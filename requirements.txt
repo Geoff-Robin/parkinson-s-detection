@@ -1,0 +1,6 @@
+Flask
+joblib
+librosa
+numpy
+pandas
+scikit-learn

@@ -15,31 +15,169 @@ model = joblib.load('parkinsons_detector.pkl')
 
 # Function to extract voice features
 def extract_voice_features(file_path):
-    y, sr = librosa.load(file_path, sr=None)
-    features = {
-        'MDVP:Fo(Hz)': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'MDVP:Fhi(Hz)': np.max(librosa.feature.mfcc(y=y, sr=sr)),
-        'MDVP:Flo(Hz)': np.min(librosa.feature.mfcc(y=y, sr=sr)),
-        'MDVP:Jitter(%)': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'MDVP:Jitter(Abs)': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'MDVP:RAP': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'MDVP:PPQ': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'Jitter:DDP': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'MDVP:Shimmer': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'MDVP:Shimmer(dB)': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'Shimmer:APQ3': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'Shimmer:APQ5': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'MDVP:APQ': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'Shimmer:DDA': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'NHR': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'HNR': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'RPDE': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'DFA': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'spread1': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'spread2': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'D2': np.mean(librosa.feature.mfcc(y=y, sr=sr)),
-        'PPE': np.mean(librosa.feature.mfcc(y=y, sr=sr))
-    }
+    signal, sr = librosa.load(file_path, sr=None)
+    fo = np.mean(np.diff(np.unwrap(np.angle(signal))))
+
+
+    # 2. MDVP:Fhi(Hz)
+
+    fhi = np.max(np.diff(np.unwrap(np.angle(signal))))
+
+
+    # 3. MDVP:Flo(Hz)
+
+    flo = np.min(np.diff(np.unwrap(np.angle(signal))))
+
+
+    # 4. MDVP:Jitter(%)
+
+    jitter_percent = np.mean(np.abs(np.diff(np.diff(np.unwrap(np.angle(signal)))))) / fo * 100
+
+
+    # 5. MDVP:Jitter(Abs)
+
+    jitter_abs = np.mean(np.abs(np.diff(np.diff(np.unwrap(np.angle(signal))))))
+
+
+    # 6. MDVP:RAP
+
+    rap = np.mean(np.abs(np.diff(np.unwrap(np.angle(signal))))) / fo
+
+
+    # 7. MDVP:PPQ
+
+    ppq = np.mean(np.abs(np.diff(np.unwrap(np.angle(signal))))) / np.mean(np.abs(signal))
+
+
+    # 8. Jitter:DDP
+
+    ddp = np.mean(np.abs(np.diff(np.diff(np.unwrap(np.angle(signal)))))) / np.mean(np.abs(np.diff(np.unwrap(np.angle(signal)))))
+
+
+    # 9. MDVP:Shimmer
+
+    shimmer = np.mean(np.abs(np.diff(signal))) / np.mean(np.abs(signal))
+
+
+    # 10. MDVP:Shimmer(dB)
+
+    shimmer_db = 20 * np.log10(np.mean(np.abs(np.diff(signal))) / np.mean(np.abs(signal)))
+
+
+    # 11. Shimmer:APQ3
+
+    apq3 = np.mean(np.abs(np.diff(signal, n=3))) / np.mean(np.abs(signal))
+
+
+    # 12. Shimmer:APQ5
+
+    apq5 = np.mean(np.abs(np.diff(signal, n=5))) / np.mean(np.abs(signal))
+
+
+    # 13. MDVP:APQ
+
+    apq = np.mean(np.abs(np.diff(signal))) / np.mean(np.abs(signal))
+
+
+    # 14. Shimmer:DDA
+
+    dda = np.mean(np.abs(np.diff(signal, n=2))) / np.mean(np.abs(signal))
+
+
+    # 15. NHR
+
+    nhr = np.mean(np.abs(signal)) / np.max(np.abs(signal))
+
+
+    # 16. HNR
+
+    hnr = np.mean(np.abs(signal)) / np.std(signal)
+
+
+    # 17. status (not calculated, as it's a label)
+
+    status = None
+
+
+    # 18. RPDE
+
+    rpde = np.mean(np.abs(np.diff(signal))) / np.mean(np.abs(signal))
+
+
+    # 19. DFA
+
+    dfa = np.mean(np.abs(np.diff(signal, n=2))) / np.mean(np.abs(signal))
+
+
+    # 20. spread1
+
+    spread1 = np.std(signal)
+
+
+    # 21. spread2
+
+    spread2 = np.std(np.diff(signal))
+
+
+    # 22. D2
+
+    d2 = np.mean(np.abs(np.diff(signal, n=2))) / np.mean(np.abs(signal))
+
+
+    # 23. PPE
+
+    ppe = np.mean(np.abs(np.diff(signal, n=3))) / np.mean(np.abs(signal))
+
+
+    features = pd.DataFrame({
+
+        'MDVP:Fo(Hz)': [fo],
+
+        'MDVP:Fhi(Hz)': [fhi],
+
+        'MDVP:Flo(Hz)': [flo],
+
+        'MDVP:Jitter(%)': [jitter_percent],
+
+        'MDVP:Jitter(Abs)': [jitter_abs],
+
+        'MDVP:RAP': [rap],
+
+        'MDVP:PPQ': [ppq],
+
+        'Jitter:DDP': [ddp],
+
+        'MDVP:Shimmer': [shimmer],
+
+        'MDVP:Shimmer(dB)': [shimmer_db],
+
+        'Shimmer:APQ3': [apq3],
+
+        'Shimmer:APQ5': [apq5],
+
+        'MDVP:APQ': [apq],
+
+        'Shimmer:DDA': [dda],
+
+        'NHR': [nhr],
+
+        'HNR': [hnr],
+
+        'RPDE': [rpde],
+
+        'DFA': [dfa],
+
+        'spread1': [spread1],
+
+        'spread2': [spread2],
+
+        'D2': [d2],
+
+        'PPE': [ppe]
+
+    })
+
+
     return features
 
 # Route for home page
